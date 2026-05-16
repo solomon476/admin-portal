@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import AIAssistant from '../AIAssistant';
 
+import { LayoutDashboard, Users, BookOpen, CircleDollarSign, Settings as SettingsIcon, School, Menu } from 'lucide-react';
+
 const navItems = [
-  { path: '/', label: 'dashboard', icon: '⊞', section: 'main' },
-  { path: '/users', label: 'users', icon: '👥', section: 'main' },
-  { path: '/classes', label: 'classes', icon: '📚', section: 'main' },
-  { path: '/finance', label: 'finance', icon: '💰', section: 'main' },
-  { path: '/settings', label: 'settings', icon: '⚙️', section: 'system' },
+  { path: '/', label: 'dashboard', icon: <LayoutDashboard size={20} />, section: 'main' },
+  { path: '/users', label: 'users', icon: <Users size={20} />, section: 'main' },
+  { path: '/classes', label: 'classes', icon: <BookOpen size={20} />, section: 'main' },
+  { path: '/finance', label: 'finance', icon: <CircleDollarSign size={20} />, section: 'main' },
+  { path: '/settings', label: 'settings', icon: <SettingsIcon size={20} />, section: 'system' },
 ];
 
 export default function Layout({ children }) {
   const { t, currentAdmin, config, updateConfig } = useAdmin();
   const [activePath, setActivePath] = useState('/');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // derive page title from active path
   const titleMap = {
@@ -25,6 +28,7 @@ export default function Layout({ children }) {
 
   const handleNav = (path) => {
     setActivePath(path);
+    setIsMobileMenuOpen(false);
     // Push state without full reload
     window.history.pushState({}, '', path);
     // Trigger a popstate-like update for Routes
@@ -33,10 +37,16 @@ export default function Layout({ children }) {
 
   return (
     <div className="layout">
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`} 
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="logo-icon">🏫</div>
+          <div className="logo-icon"><School size={24} /></div>
           <span>EduPortal Admin</span>
         </div>
 
@@ -49,7 +59,7 @@ export default function Layout({ children }) {
               onClick={() => handleNav(item.path)}
               href="#"
             >
-              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              <span style={{ display: 'flex', alignItems: 'center' }}>{item.icon}</span>
               {t(item.label)}
             </a>
           ))}
@@ -62,7 +72,7 @@ export default function Layout({ children }) {
               onClick={() => handleNav(item.path)}
               href="#"
             >
-              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              <span style={{ display: 'flex', alignItems: 'center' }}>{item.icon}</span>
               {t(item.label)}
             </a>
           ))}
@@ -84,7 +94,12 @@ export default function Layout({ children }) {
       {/* Main */}
       <div className="main-wrap">
         <header className="topbar">
-          <div className="topbar-title">{titleMap[activePath] || 'Admin Portal'}</div>
+          <div className="topbar-left">
+            <button className="menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <div className="topbar-title">{titleMap[activePath] || 'Admin Portal'}</div>
+          </div>
           <div className="topbar-actions">
             <div className="lang-switcher">
               <button

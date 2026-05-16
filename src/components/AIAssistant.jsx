@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { Sparkles, Bot, X } from 'lucide-react';
 
 export default function AIAssistant() {
   const [open, setOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function AIAssistant() {
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
       >
-        ✨
+        <Sparkles size={24} />
       </button>
 
       {/* Slide Panel / Chat Window */}
@@ -72,13 +73,13 @@ export default function AIAssistant() {
           <div className="slide-panel" onClick={e => e.stopPropagation()} style={{ zIndex: 1000 }}>
             <div className="panel-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 24 }}>🤖</span>
+                <span style={{ display: 'flex', alignItems: 'center' }}><Bot size={24} /></span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 16 }}>AI Assistant</div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Online</div>
                 </div>
               </div>
-              <button className="btn btn-ghost" onClick={() => setOpen(false)}>✕</button>
+              <button className="btn btn-ghost" onClick={() => setOpen(false)} style={{ display: 'flex' }}><X size={16} /></button>
             </div>
 
             <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 16, background: 'var(--bg-base)' }}>

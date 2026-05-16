@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { School } from 'lucide-react';
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function LoginPage({ onLogin }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <div className="logo-icon">🏫</div>
+          <div className="logo-icon"><School size={24} /></div>
           <span>EduPortal Admin</span>
         </div>
         <h1 className="login-title">Welcome back</h1>

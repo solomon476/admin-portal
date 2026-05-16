@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { CircleDollarSign, Download } from 'lucide-react';
 
 const STATUS_OPTIONS = ['all', 'successful', 'failed', 'overdue'];
 const TERMS = ['all', 'Term 1 2026', 'Term 2 2026'];
@@ -39,7 +40,7 @@ export default function FinancialOverview() {
   return (
     <div>
       <div className="page-header">
-        <h1>💰 Financial Oversight</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><CircleDollarSign size={32} /> Financial Oversight</h1>
         <p>Read-only audit view of all school payments. No edits permitted.</p>
       </div>
 
@@ -71,7 +72,7 @@ export default function FinancialOverview() {
           <input className="input" type="date" style={{ width: 'auto' }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="From date" />
           <input className="input" type="date" style={{ width: 'auto' }} value={dateTo} onChange={e => setDateTo(e.target.value)} title="To date" />
           <div style={{ flex: 1 }} />
-          <button className="btn btn-ghost btn-sm" onClick={() => exportCSV(filtered)}>⬇ Export CSV</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => exportCSV(filtered)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Download size={16} /> Export CSV</button>
         </div>
 
         <div className="table-wrap">

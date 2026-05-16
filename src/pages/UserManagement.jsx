@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { AlertTriangle, X, Users, Search, Upload } from 'lucide-react';
 
 const ROLES = ['all', 'student', 'teacher', 'parent', 'admin'];
 
@@ -7,7 +8,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="dialog-overlay">
       <div className="dialog">
-        <h3>⚠️ Confirm Action</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={20} /> Confirm Action</h3>
         <p>{message}</p>
         <div className="dialog-actions">
           <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
@@ -27,7 +28,7 @@ function UserPanel({ user, onClose, onSave }) {
       <div className="slide-panel">
         <div className="panel-header">
           <strong>{user.id ? 'Edit User' : 'New User'}</strong>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}><X size={16} /></button>
         </div>
         <div className="panel-body">
           <div className="form-grid">
@@ -111,14 +112,14 @@ export default function UserManagement() {
       )}
 
       <div className="page-header">
-        <h1>👥 User &amp; Role Management</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Users size={32} /> User &amp; Role Management</h1>
         <p>View, add, edit, or deactivate students, teachers, and parents.</p>
       </div>
 
       <div className="card">
         <div className="toolbar">
           <div className="search-wrap" style={{ flex: 1, maxWidth: 320 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex' }}><Search size={16} /></span>
             <input
               className="input"
               style={{ paddingLeft: 34 }}
@@ -130,7 +131,7 @@ export default function UserManagement() {
           <select className="select" style={{ width: 'auto' }} value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
             {ROLES.map(r => <option key={r} value={r}>{r === 'all' ? 'All Roles' : r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
           </select>
-          <button className="btn btn-ghost btn-sm" title="Import CSV (mock)" onClick={() => alert('CSV mapping screen would open here.')}>⬆ Import CSV</button>
+          <button className="btn btn-ghost btn-sm" title="Import CSV (mock)" onClick={() => alert('CSV mapping screen would open here.')} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Upload size={16} /> Import CSV</button>
           <button className="btn btn-primary btn-sm" onClick={() => setPanelUser({})}>+ Add User</button>
         </div>
 

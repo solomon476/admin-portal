@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { AlertTriangle, BookOpen, X } from 'lucide-react';
 
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="dialog-overlay">
       <div className="dialog">
-        <h3>⚠️ Confirm Action</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={20} /> Confirm Action</h3>
         <p>{message}</p>
         <div className="dialog-actions">
           <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
@@ -61,11 +62,11 @@ export default function ClassSetup() {
 
       <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h1>📚 Academic &amp; Class Setup</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><BookOpen size={32} /> Academic &amp; Class Setup</h1>
           <p>Create classes, assign teachers, and enroll students.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(p => !p)}>
-          {showForm ? '✕ Cancel' : '+ New Class'}
+        <button className="btn btn-primary" onClick={() => setShowForm(p => !p)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {showForm ? <><X size={16} /> Cancel</> : '+ New Class'}
         </button>
       </div>
 
@@ -143,9 +144,9 @@ export default function ClassSetup() {
                 <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-card-hover)', border: '1px solid var(--border)', borderRadius: 99, padding: '4px 10px' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{s.name}</span>
                   <button
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 12 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
                     onClick={() => confirmRemove(cls.id, s.id)}
-                  >✕</button>
+                  ><X size={14} /></button>
                 </div>
               ))}
             </div>

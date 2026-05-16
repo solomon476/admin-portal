@@ -1,11 +1,12 @@
 import React from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { GraduationCap, Presentation, AlertTriangle, BookOpen, Zap, Users, CircleDollarSign, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
 
 function MetricCard({ label, value, icon, colorClass, change }) {
   return (
     <div className={`metric-card ${colorClass}`}>
-      <div className="metric-icon" style={{ background: 'var(--border)' }}>
-        <span style={{ fontSize: 20 }}>{icon}</span>
+      <div className="metric-icon" style={{ background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span>{icon}</span>
       </div>
       <div className="metric-value">{value ?? <span className="skeleton" style={{ width: 60, height: 28, display: 'inline-block' }} />}</div>
       <div className="metric-label">{label}</div>
@@ -31,28 +32,28 @@ export default function Dashboard() {
 
       {/* Metrics */}
       <div className="metrics-grid">
-        <MetricCard label={t('totalStudents')} value={metrics.totalStudents} icon="🎓" colorClass="indigo" change="+2 this term" />
-        <MetricCard label={t('totalTeachers')} value={metrics.totalTeachers} icon="👩‍🏫" colorClass="green" />
-        <MetricCard label={t('pendingFees')} value={`KES ${metrics.pendingFees.toLocaleString()}`} icon="⚠️" colorClass="yellow" />
-        <MetricCard label={t('activeClasses')} value={metrics.activeClasses} icon="📚" colorClass="blue" />
+        <MetricCard label={t('totalStudents')} value={metrics.totalStudents} icon={<GraduationCap size={20} />} colorClass="indigo" change="+2 this term" />
+        <MetricCard label={t('totalTeachers')} value={metrics.totalTeachers} icon={<Presentation size={20} />} colorClass="green" />
+        <MetricCard label={t('pendingFees')} value={`KES ${metrics.pendingFees.toLocaleString()}`} icon={<AlertTriangle size={20} />} colorClass="yellow" />
+        <MetricCard label={t('activeClasses')} value={metrics.activeClasses} icon={<BookOpen size={20} />} colorClass="blue" />
       </div>
 
       {/* Quick Actions */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div>
-            <div className="card-title">⚡ {t('quickActions')}</div>
+            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={18} /> {t('quickActions')}</div>
           </div>
         </div>
         <div className="quick-actions">
           {[
-            { label: t('manageUsers'), path: '/users', icon: '👥' },
-            { label: t('setupClasses'), path: '/classes', icon: '📚' },
-            { label: t('viewFinance'), path: '/finance', icon: '💰' },
-            { label: t('systemSettings'), path: '/settings', icon: '⚙️' },
+            { label: t('manageUsers'), path: '/users', icon: <Users size={16} /> },
+            { label: t('setupClasses'), path: '/classes', icon: <BookOpen size={16} /> },
+            { label: t('viewFinance'), path: '/finance', icon: <CircleDollarSign size={16} /> },
+            { label: t('systemSettings'), path: '/settings', icon: <SettingsIcon size={16} /> },
           ].map(a => (
             <button key={a.path} className="quick-btn" onClick={() => handleQuickNav(a.path)}>
-              <span>{a.icon}</span> {a.label}
+              <span style={{ display: 'flex', alignItems: 'center' }}>{a.icon}</span> {a.label}
             </button>
           ))}
         </div>
@@ -62,7 +63,7 @@ export default function Dashboard() {
       <div className="card">
         <div className="card-header">
           <div>
-            <div className="card-title">📋 {t('recentActivity')}</div>
+            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ClipboardList size={18} /> {t('recentActivity')}</div>
             <div className="card-subtitle">Live system events</div>
           </div>
           <button

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import { Globe, Gamepad2, Bell, Lock, Database, ClipboardList, Settings as SettingsIcon, AlertTriangle } from 'lucide-react';
 
 const SECTIONS = [
-  { id: 'general', label: '🌐 General', icon: '🌐' },
-  { id: 'gamification', label: '🎮 Gamification', icon: '🎮' },
-  { id: 'notifications', label: '🔔 Notifications', icon: '🔔' },
-  { id: 'permissions', label: '🔒 Permissions', icon: '🔒' },
-  { id: 'data', label: '🗄 Data & Retention', icon: '🗄' },
-  { id: 'audit', label: '📋 Audit Log', icon: '📋' },
+  { id: 'general', label: 'General', icon: <Globe size={18} /> },
+  { id: 'gamification', label: 'Gamification', icon: <Gamepad2 size={18} /> },
+  { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
+  { id: 'permissions', label: 'Permissions', icon: <Lock size={18} /> },
+  { id: 'data', label: 'Data & Retention', icon: <Database size={18} /> },
+  { id: 'audit', label: 'Audit Log', icon: <ClipboardList size={18} /> },
 ];
 
 function Toggle({ on, onChange }) {
@@ -33,7 +34,7 @@ export default function SystemSettings() {
   return (
     <div>
       <div className="page-header">
-        <h1>⚙️ System Settings</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><SettingsIcon size={32} /> System Settings</h1>
         <p>Configure how the entire platform behaves. Admin-only access.</p>
       </div>
 
@@ -42,7 +43,7 @@ export default function SystemSettings() {
         <div className="settings-nav">
           {SECTIONS.map(s => (
             <div key={s.id} className={`settings-nav-item ${active === s.id ? 'active' : ''}`} onClick={() => setActive(s.id)}>
-              <span>{s.icon}</span> {s.label.split(' ').slice(1).join(' ')}
+              <span style={{ display: 'flex', alignItems: 'center' }}>{s.icon}</span> {s.label}
             </div>
           ))}
         </div>
@@ -51,7 +52,7 @@ export default function SystemSettings() {
         <div className="card">
           {active === 'general' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>🌐 General Settings</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Globe size={18} /> General Settings</div>
               <SettingRow label="Default Language" desc="Controls the language shown across all portals by default.">
                 <select className="select" style={{ width: 'auto' }} value={config.language} onChange={e => updateConfig({ language: e.target.value })}>
                   <option value="en">English</option>
@@ -63,7 +64,7 @@ export default function SystemSettings() {
 
           {active === 'gamification' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>🎮 Gamification</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Gamepad2 size={18} /> Gamification</div>
               <SettingRow label="Enable Badges" desc="Students earn badges when they hit XP milestones.">
                 <Toggle on={config.badgesEnabled} onChange={v => updateConfig({ badgesEnabled: v })} />
               </SettingRow>
@@ -81,7 +82,7 @@ export default function SystemSettings() {
 
           {active === 'notifications' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>🔔 Notification Settings</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Bell size={18} /> Notification Settings</div>
               <SettingRow label="Payment Received Alert" desc="Notify admin when a payment is processed.">
                 <Toggle on={config.notifyPayment} onChange={v => updateConfig({ notifyPayment: v })} />
               </SettingRow>
@@ -96,7 +97,7 @@ export default function SystemSettings() {
 
           {active === 'permissions' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>🔒 Role Permissions</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Lock size={18} /> Role Permissions</div>
               <SettingRow label="Parent Messaging" desc="Allow parents to send messages to teachers through the portal.">
                 <Toggle on={config.allowParentMessaging} onChange={v => updateConfig({ allowParentMessaging: v })} />
               </SettingRow>
@@ -108,19 +109,19 @@ export default function SystemSettings() {
 
           {active === 'data' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>🗄 Data &amp; Retention</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><Database size={18} /> Data &amp; Retention</div>
               <SettingRow label="Data Retention Period (years)" desc="How long student and payment data is kept before archival.">
                 <input className="input" style={{ width: 90, textAlign: 'center' }} type="number" min="1" max="20" value={config.dataRetentionYears} onChange={e => updateConfig({ dataRetentionYears: Number(e.target.value) })} />
               </SettingRow>
               <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--red-bg)', border: '1px solid var(--red)', borderRadius: 'var(--radius-sm)', fontSize: 13, color: 'var(--red)' }}>
-                ⚠️ Data purge actions are permanent and irreversible. Only super-admins can trigger them.
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={16} /> Data purge actions are permanent and irreversible. Only super-admins can trigger them.</div>
               </div>
             </>
           )}
 
           {active === 'audit' && (
             <>
-              <div className="card-title" style={{ marginBottom: 16 }}>📋 Audit Log</div>
+              <div className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}><ClipboardList size={18} /> Audit Log</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>Showing last {auditLog.length} actions. Read-only.</div>
               {auditLog.map(e => (
                 <div key={e.id} className="audit-item">
