@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { School } from 'lucide-react';
+import { api } from '../lib/api';
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -7,18 +8,28 @@ export default function LoginPage({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      if (email.trim().toLowerCase() === 'admin@school.ke' && password.trim() === 'admin2026') {
-        onLogin();
-      } else {
-        setError('Invalid credentials. Try admin@school.ke / admin2026');
-        setLoading(false);
+    try {
+      const response = await api.post('/auth/login', {
+        email: email.trim(),
+        password: password.trim()
+      });
+
+      if (response.user && response.user.role !== 'admin') {
+        throw new Error('Access denied: You must be an admin.');
       }
-    }, 800);
+
+      localStorage.setItem('somobloom_token', response.token);
+      localStorage.setItem('somobloom_user', JSON.stringify(response.user));
+      onLogin();
+    } catch (err) {
+      console.error('Admin login error:', err);
+      setError(err.message || 'Invalid credentials. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (

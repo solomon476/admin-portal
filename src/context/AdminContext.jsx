@@ -1,35 +1,125 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import {
-  mockUsers, mockClasses, mockPayments,
-  mockActivity, mockAuditLog, defaultConfig, translations
+  mockPayments, mockActivity, mockAuditLog, defaultConfig, translations
 } from '../data/mockData';
+import { api } from '../lib/api';
 
 const AdminContext = createContext(null);
 
 export function AdminProvider({ children }) {
-  const [users, setUsers] = useState(mockUsers);
-  const [classes, setClasses] = useState(mockClasses);
+  const [users, setUsers] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [payments] = useState(mockPayments);
   const [activity, setActivity] = useState(mockActivity);
   const [auditLog, setAuditLog] = useState(mockAuditLog);
   const [config, setConfig] = useState(defaultConfig);
-  const [currentAdmin] = useState(mockUsers.find(u => u.role === 'admin'));
+  const [loading, setLoading] = useState(true);
+  
+  const [currentAdmin, setCurrentAdmin] = useState(() => {
+    try {
+      const user = localStorage.getItem('somobloom_user');
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [usersRes, classesRes] = await Promise.all([
+        api.get('/admin/users'),
+        api.get('/admin/classes')
+      ]);
+      setUsers(usersRes.users || []);
+      setClasses(classesRes.classes || []);
+    } catch (err) {
+      console.error('Failed to load admin data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('somobloom_token');
+    if (token) {
+      fetchData();
+      
+      // Keep currentAdmin in sync
+      try {
+        const user = localStorage.getItem('somobloom_user');
+        if (user) setCurrentAdmin(JSON.parse(user));
+      } catch (e) {}
+    } else {
+      setLoading(false);
+    }
+  }, [fetchData]);
 
   const t = useCallback((key) => {
     return translations[config.language]?.[key] || translations.en[key] || key;
   }, [config.language]);
 
   // ── User actions ──────────────────────────────────────
-  const addUser = (user) => {
-    const newUser = { ...user, id: `u${Date.now()}`, joined: new Date().toISOString().split('T')[0], status: 'active' };
-    setUsers(prev => [newUser, ...prev]);
-    pushActivity('Admin Super', 'added user', `${newUser.name} (${newUser.role})`);
-    pushAudit(`Added new user ${newUser.name} (${newUser.role})`);
+  const addUser = async (user) => {
+    try {
+      let endpoint = '';
+      const payload = {
+        name: user.name,
+        email: user.email,
+        password: user.password || 'somobloom123'
+      };
+
+      if (user.role === 'teacher') {
+        endpoint = '/admin/teachers';
+        payload.department = user.department || '';
+      } else if (user.role === 'student') {
+        endpoint = '/admin/students';
+        payload.studentIdNumber = user.studentId || '';
+      } else if (user.role === 'parent') {
+        endpoint = '/admin/parents';
+        payload.phoneNumber = user.phone || '';
+      } else {
+        throw new Error(`Unsupported user role: ${user.role}`);
+      }
+
+      const res = await api.post(endpoint, payload);
+      const newUser = {
+        id: res.teacher?.id || res.student?.id || res.parent?.id,
+        userId: res.teacher?.userId || res.student?.userId || res.parent?.userId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: new Date().toISOString(),
+        status: 'active',
+        department: user.department,
+        studentIdNumber: user.studentId,
+        phoneNumber: user.phone
+      };
+
+      setUsers(prev => [newUser, ...prev]);
+      pushActivity(currentAdmin?.name || 'Admin', 'added user', `${newUser.name} (${newUser.role})`);
+      pushAudit(`Added new user ${newUser.name} (${newUser.role})`);
+    } catch (err) {
+      console.error('Failed to add user:', err);
+      alert(err.message || 'Failed to add user');
+    }
   };
 
-  const updateUser = (id, patch) => {
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...patch } : u));
-    pushAudit(`Updated user ${patch.name || id}`);
+  const updateUser = async (id, patch) => {
+    try {
+      await api.put(`/admin/users/${id}`, {
+        name: patch.name,
+        email: patch.email,
+        department: patch.department,
+        studentIdNumber: patch.studentId,
+        phoneNumber: patch.phone
+      });
+
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, ...patch } : u));
+      pushAudit(`Updated user ${patch.name || id}`);
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      alert(err.message || 'Failed to update user');
+    }
   };
 
   const deactivateUser = (id) => {
@@ -38,33 +128,88 @@ export function AdminProvider({ children }) {
     pushAudit(`${u?.status === 'active' ? 'Deactivated' : 'Activated'} user ${u?.name}`);
   };
 
-  const deleteUser = (id) => {
-    const u = users.find(x => x.id === id);
-    setUsers(prev => prev.filter(x => x.id !== id));
-    pushAudit(`Deleted user ${u?.name}`);
+  const deleteUser = async (id) => {
+    try {
+      const u = users.find(x => x.id === id);
+      await api.delete(`/admin/users/${id}`);
+      setUsers(prev => prev.filter(x => x.id !== id));
+      pushAudit(`Deleted user ${u?.name}`);
+    } catch (err) {
+      console.error('Failed to delete user:', err);
+      alert(err.message || 'Failed to delete user');
+    }
   };
 
   // ── Class actions ─────────────────────────────────────
-  const addClass = (cls) => {
-    const newCls = { ...cls, id: `c${Date.now()}`, students: [], status: 'active' };
-    setClasses(prev => [newCls, ...prev]);
-    pushAudit(`Created class "${newCls.name}"`);
+  const addClass = async (cls) => {
+    try {
+      const res = await api.post('/admin/classes', {
+        name: cls.name,
+        teacherProfileId: cls.teacherId
+      });
+
+      const newCls = {
+        id: res.class.id,
+        name: cls.name,
+        teacherId: cls.teacherId,
+        teacher: users.find(u => u.id === cls.teacherId)?.name || 'Unassigned',
+        students: [],
+        status: 'active'
+      };
+
+      setClasses(prev => [newCls, ...prev]);
+      pushAudit(`Created class "${newCls.name}"`);
+    } catch (err) {
+      console.error('Failed to create class:', err);
+      alert(err.message || 'Failed to create class');
+    }
   };
 
-  const updateClass = (id, patch) => {
-    setClasses(prev => prev.map(c => c.id === id ? { ...c, ...patch } : c));
-    pushAudit(`Updated class "${patch.name || id}"`);
+  const updateClass = async (id, patch) => {
+    try {
+      await api.put(`/admin/classes/${id}`, {
+        name: patch.name,
+        teacherId: patch.teacherId
+      });
+
+      setClasses(prev => prev.map(c => {
+        if (c.id !== id) return c;
+        const teacherName = patch.teacherId 
+          ? (users.find(u => u.id === patch.teacherId)?.name || c.teacher)
+          : c.teacher;
+
+        return {
+          ...c,
+          ...patch,
+          teacher: teacherName
+        };
+      }));
+      pushAudit(`Updated class "${patch.name || id}"`);
+    } catch (err) {
+      console.error('Failed to update class:', err);
+      alert(err.message || 'Failed to update class');
+    }
   };
 
-  const enrollStudent = (classId, studentId) => {
-    setClasses(prev => prev.map(c => {
-      if (c.id !== classId) return c;
-      if (c.students.includes(studentId)) return c; // prevent duplicate
-      return { ...c, students: [...c.students, studentId] };
-    }));
-    const student = users.find(u => u.id === studentId);
-    const cls = classes.find(c => c.id === classId);
-    pushAudit(`Enrolled ${student?.name} in ${cls?.name}`);
+  const enrollStudent = async (classId, studentId) => {
+    try {
+      await api.post(`/admin/classes/${classId}/enrollments`, {
+        studentProfileId: studentId
+      });
+
+      setClasses(prev => prev.map(c => {
+        if (c.id !== classId) return c;
+        if (c.students.includes(studentId)) return c;
+        return { ...c, students: [...c.students, studentId] };
+      }));
+
+      const student = users.find(u => u.id === studentId);
+      const cls = classes.find(c => c.id === classId);
+      pushAudit(`Enrolled ${student?.name} in ${cls?.name}`);
+    } catch (err) {
+      console.error('Failed to enroll student:', err);
+      alert(err.message || 'Failed to enroll student');
+    }
   };
 
   const removeStudent = (classId, studentId) => {
@@ -92,7 +237,7 @@ export function AdminProvider({ children }) {
     const now = new Date();
     const time = `${now.toISOString().split('T')[0]} ${now.toTimeString().slice(0, 5)}`;
     setAuditLog(prev => [
-      { id: `al${Date.now()}`, time, user: 'Admin Super', action, category: 'General' },
+      { id: `al${Date.now()}`, time, user: currentAdmin?.name || 'Admin', action, category: 'General' },
       ...prev.slice(0, 19)
     ]);
   };
