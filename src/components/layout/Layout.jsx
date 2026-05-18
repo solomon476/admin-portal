@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import AIAssistant from '../AIAssistant';
 import SomoBloomLogo from './SomoBloomLogo';
-
-import { LayoutDashboard, Users, BookOpen, CircleDollarSign, Settings as SettingsIcon, School, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, CircleDollarSign, Settings as SettingsIcon, Menu, LogOut } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'dashboard', icon: <LayoutDashboard size={20} />, section: 'main' },
@@ -18,7 +17,6 @@ export default function Layout({ children }) {
   const [activePath, setActivePath] = useState('/');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // derive page title from active path
   const titleMap = {
     '/': t('dashboard'),
     '/users': t('users'),
@@ -30,26 +28,32 @@ export default function Layout({ children }) {
   const handleNav = (path) => {
     setActivePath(path);
     setIsMobileMenuOpen(false);
-    // Push state without full reload
     window.history.pushState({}, '', path);
-    // Trigger a popstate-like update for Routes
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   return (
     <div className="layout">
       {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`} 
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? 'open' : ''}`}
         onClick={() => setIsMobileMenuOpen(false)}
-      ></div>
+      />
 
       {/* Sidebar */}
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
-          <SomoBloomLogo size={36} fontSize="17px" />
+
+        {/* Brand Logo */}
+        <div style={{
+          padding: '20px 18px',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <SomoBloomLogo size={32} fontSize="15px" />
         </div>
 
+        {/* Navigation */}
         <nav className="sidebar-nav">
           <div className="nav-section-label">Main</div>
           {navItems.filter(i => i.section === 'main').map(item => (
@@ -78,27 +82,30 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
+        {/* Admin Badge */}
         <div className="sidebar-footer">
           <div className="admin-badge">
             <div className="admin-avatar">
-              {currentAdmin?.avatar || 'A'}
+              {currentAdmin?.avatar || currentAdmin?.name?.[0] || 'A'}
             </div>
             <div className="admin-info">
-              <div className="name">{currentAdmin?.name}</div>
-              <div className="role">Administrator</div>
+              <div className="name">{currentAdmin?.name || 'Administrator'}</div>
+              <div className="role">SomoBloom Admin</div>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main Content Area */}
       <div className="main-wrap">
         <header className="topbar">
           <div className="topbar-left">
             <button className="menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
               <Menu size={24} />
             </button>
-            <div className="topbar-title">{titleMap[activePath] || 'Admin Portal'}</div>
+            <div className="topbar-title">
+              {titleMap[activePath] || t('dashboard')}
+            </div>
           </div>
           <div className="topbar-actions">
             <div className="lang-switcher">
@@ -118,7 +125,7 @@ export default function Layout({ children }) {
           {children}
         </main>
       </div>
-      
+
       {/* AI Assistant Floating Button */}
       <AIAssistant />
     </div>

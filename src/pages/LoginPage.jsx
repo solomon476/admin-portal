@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { School } from 'lucide-react';
+import { useState } from 'react';
 import { api } from '../lib/api';
 import SomoBloomLogo from '../components/layout/SomoBloomLogo';
 
@@ -20,7 +19,7 @@ export default function LoginPage({ onLogin }) {
       });
 
       if (response.user && response.user.role !== 'admin') {
-        throw new Error('Access denied: You must be an admin.');
+        throw new Error('Access denied: Admin accounts only.');
       }
 
       localStorage.setItem('somobloom_token', response.token);
@@ -35,29 +34,42 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-          <SomoBloomLogo size={48} fontSize="20px" />
+
+        {/* Brand Logo */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28, gap: 12 }}>
+          <SomoBloomLogo size={60} showText={false} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
+              Somo<span style={{ color: '#4f46e5' }}>Bloom</span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>
+              School Management System
+            </div>
+          </div>
         </div>
-        <h1 className="login-title">Welcome back</h1>
-        <p className="login-subtitle">Sign in to access the school control room.</p>
+
+        <h1 className="login-title">Administrator Sign In</h1>
+        <p className="login-subtitle">Access the SomoBloom control panel to manage your school.</p>
+
         {error && <div className="login-error">{error}</div>}
+
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="admin-email">Email address</label>
             <input
-              id="email"
+              id="admin-email"
               className="input"
               type="email"
-              placeholder="admin@school.ke"
+              placeholder="admin@somobloom.ac.ke"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="admin-password">Password</label>
             <input
-              id="password"
+              id="admin-password"
               className="input"
               type="password"
               placeholder="••••••••"
@@ -72,11 +84,12 @@ export default function LoginPage({ onLogin }) {
             disabled={loading}
             style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}
           >
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? 'Signing in…' : 'Sign In to SomoBloom'}
           </button>
         </form>
+
         <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 20, textAlign: 'center' }}>
-          Admin access only. Other portals require separate login.
+          Admin access only · SomoBloom Africa © {new Date().getFullYear()}
         </p>
       </div>
     </div>
