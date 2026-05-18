@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { School } from 'lucide-react';
 import { api } from '../lib/api';
+import SomoBloomLogo from '../components/layout/SomoBloomLogo';
 
 export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -26,7 +27,6 @@ export default function LoginPage({ onLogin }) {
       localStorage.setItem('somobloom_user', JSON.stringify(response.user));
       onLogin();
     } catch (err) {
-      console.error('Admin login error:', err);
       setError(err.message || 'Invalid credentials. Please try again.');
       setLoading(false);
     }
@@ -35,9 +35,8 @@ export default function LoginPage({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-logo">
-          <div className="logo-icon"><School size={24} /></div>
-          <span>EduPortal Admin</span>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <SomoBloomLogo size={48} fontSize="20px" />
         </div>
         <h1 className="login-title">Welcome back</h1>
         <p className="login-subtitle">Sign in to access the school control room.</p>

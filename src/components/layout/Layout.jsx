@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import AIAssistant from '../AIAssistant';
+import SomoBloomLogo from './SomoBloomLogo';
 
 import { LayoutDashboard, Users, BookOpen, CircleDollarSign, Settings as SettingsIcon, School, Menu } from 'lucide-react';
 
@@ -45,9 +46,8 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">
-          <div className="logo-icon"><School size={24} /></div>
-          <span>EduPortal Admin</span>
+        <div className="sidebar-logo" style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
+          <SomoBloomLogo size={36} fontSize="17px" />
         </div>
 
         <nav className="sidebar-nav">
