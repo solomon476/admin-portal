@@ -65,7 +65,7 @@ export function AdminProvider({ children }) {
       const payload = {
         name: user.name,
         email: user.email,
-        password: user.password || 'somobloom123'
+        password: user.password || Math.random().toString(36).substring(2, 10)
       };
 
       if (user.role === 'teacher') {
