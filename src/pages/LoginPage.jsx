@@ -55,12 +55,12 @@ export default function LoginPage({ onLogin }) {
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="admin-email">Email address</label>
+            <label htmlFor="admin-email">Email or Phone Number</label>
             <input
               id="admin-email"
               className="input"
-              type="email"
-              placeholder="admin@somobloom.ac.ke"
+              type="text"
+              placeholder="admin@somobloom.ac.ke or Phone Number"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
