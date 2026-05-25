@@ -64,12 +64,123 @@ function UserPanel({ user, onClose, onSave }) {
   );
 }
 
+function BulkUploadModal({ onClose, addUser }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState(null);
+
+  const handleFileChange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile(f);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target.result;
+      const lines = text.split('\n').filter(l => l.trim() !== '');
+      if (lines.length < 2) return;
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const data = lines.slice(1).map(line => {
+        const values = line.split(',');
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = values[i] ? values[i].trim() : '';
+        });
+        return obj;
+      });
+      setPreview(data);
+    };
+    reader.readAsText(f);
+  };
+
+  const handleUpload = async () => {
+    if (preview.length === 0) return;
+    setUploading(true);
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < preview.length; i++) {
+      const row = preview[i];
+      try {
+        // Map CSV fields to backend fields
+        const userPayload = {
+          name: row.name,
+          email: row.email,
+          role: row.role || 'student',
+          phone: row.phone || row.phonenumber || '',
+          studentId: row.studentid || row.studentidnumber || '',
+          department: row.department || '',
+          grade: row.grade || ''
+        };
+        await addUser(userPayload);
+        success++;
+      } catch (err) {
+        failed++;
+      }
+      setProgress(Math.round(((i + 1) / preview.length) * 100));
+    }
+
+    setResults({ success, failed, total: preview.length });
+    setUploading(false);
+  };
+
+  return (
+    <div className="dialog-overlay">
+      <div className="dialog" style={{ maxWidth: 500 }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={20} /> Bulk Import Users</h3>
+        
+        {!results ? (
+          <>
+            <p style={{ marginBottom: 16 }}>Upload a CSV file with columns: <code>name, email, role, phone, studentId</code></p>
+            
+            <input type="file" accept=".csv" onChange={handleFileChange} style={{ marginBottom: 16, display: 'block' }} disabled={uploading} />
+            
+            {preview.length > 0 && !uploading && (
+              <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>Found {preview.length} valid rows ready for import.</p>
+            )}
+
+            {uploading && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ background: '#e2e8f0', borderRadius: 8, height: 8, width: '100%', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--primary)', height: '100%', width: `${progress}%`, transition: 'width 0.2s' }} />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: 12, marginTop: 8 }}>{progress}% Uploaded</p>
+              </div>
+            )}
+
+            <div className="dialog-actions">
+              <button className="btn btn-ghost" onClick={onClose} disabled={uploading}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleUpload} disabled={uploading || preview.length === 0}>
+                {uploading ? 'Importing...' : 'Start Import'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ padding: '16px 0', textAlign: 'center' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+              <h4>Import Complete!</h4>
+              <p style={{ color: 'var(--text-muted)' }}>Successfully imported <strong>{results.success}</strong> users.</p>
+              {results.failed > 0 && <p style={{ color: 'var(--error)' }}>Failed to import {results.failed} users.</p>}
+            </div>
+            <div className="dialog-actions" style={{ justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={onClose}>Done</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function UserManagement() {
   const { users, addUser, updateUser, deactivateUser, deleteUser } = useAdmin();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [panelUser, setPanelUser] = useState(null);
   const [confirm, setConfirm] = useState(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   const filtered = users.filter(u => {
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
@@ -110,6 +221,9 @@ export default function UserManagement() {
           onSave={handleSave}
         />
       )}
+      {showBulkUpload && (
+        <BulkUploadModal onClose={() => setShowBulkUpload(false)} addUser={addUser} />
+      )}
 
       <div className="page-header">
         <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Users size={32} /> User &amp; Role Management</h1>
@@ -131,7 +245,7 @@ export default function UserManagement() {
           <select className="select" style={{ width: 'auto' }} value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
             {ROLES.map(r => <option key={r} value={r}>{r === 'all' ? 'All Roles' : r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
           </select>
-          <button className="btn btn-ghost btn-sm" title="Import CSV (mock)" onClick={() => alert('CSV mapping screen would open here.')} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Upload size={16} /> Import CSV</button>
+          <button className="btn btn-ghost btn-sm" title="Import CSV" onClick={() => setShowBulkUpload(true)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Upload size={16} /> Import CSV</button>
           <button className="btn btn-primary btn-sm" onClick={() => setPanelUser({})}>+ Add User</button>
         </div>
 
